@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { constants, getRandomInt, GAME_STATES, switchPlayer } from '../utils';
+import BoardLogic from '../boardLogic';
+
 import {
   Container,
   Square,
@@ -9,6 +11,8 @@ import {
   ChooseText,
   ButtonRow
 } from './board.styles';
+
+const boardLogic = new BoardLogic();
 
 const arr = Array(constants.DIMS ** 2).fill(null);
 
@@ -20,6 +24,7 @@ const Board = () => {
   });
   const [gameState, setGameState] = useState(GAME_STATES.notStarted);
   const [nextMove, setNextMove] = useState(null);
+  const [winner, setWinner] = useState(null);
 
   const { human, droid } = players;
 
@@ -71,30 +76,78 @@ const Board = () => {
     return () => timeout && clearTimeout(timeout);
   }, [nextMove, droidMove, droid, gameState]);
 
-  return gameState === GAME_STATES.notStarted ? (
-    <Screen>
-      <Inner>
-        <ChooseText>Choose your player</ChooseText>
-        <ButtonRow>
-          <button onClick={() => chooseSide(constants.PLAYER_X)}>X</button>
-          <p>or</p>
-          <button onClick={() => chooseSide(constants.PLAYER_O)}>O</button>
-        </ButtonRow>
-      </Inner>
-    </Screen>
-  ) : (
-    <Container dims={constants.DIMS}>
-      {grid.map((value, index) => {
-        return (
-          <Square key={index} onClick={() => humanMove(index)}>
-            {value !== null && (
-              <Marker>{value === constants.PLAYER_X ? 'X' : 'O'}</Marker>
-            )}
-          </Square>
-        );
-      })}
-    </Container>
-  );
+  useEffect(() => {
+    const champion = boardLogic.getWinner(grid);
+    const declareWinner = theWinner => {
+      let champStr;
+      switch (theWinner) {
+        case constants.PLAYER_X:
+          champStr = 'Player X wins!';
+          break;
+        case constants.PLAYER_O:
+          champStr = 'Player O wins!';
+          break;
+        case constants.DRAW:
+        default:
+          champStr = "We've got a draw!";
+      }
+      setGameState(GAME_STATES.over);
+      setWinner(champStr);
+    };
+
+    if (champion !== null && gameState !== GAME_STATES.over) {
+      declareWinner(champion);
+    }
+  }, [gameState, grid, nextMove]);
+
+  const startNewGame = () => {
+    setGameState(GAME_STATES.notStarted);
+    setGrid(arr);
+  };
+
+  const choosePlayer = option => {
+    setPlayers({ human: option, computer: switchPlayer(option) });
+    setGameState(GAME_STATES.inProgress);
+    setNextMove(constants.PLAYER_X);
+  };
+
+  switch (gameState) {
+    case GAME_STATES.notStarted:
+    default:
+      return (
+        <Screen>
+          <Inner>
+            <ChooseText>Choose your player</ChooseText>
+            <ButtonRow>
+              <button onClick={() => chooseSide(constants.PLAYER_X)}>X</button>
+              <p>or</p>
+              <button onClick={() => chooseSide(constants.PLAYER_O)}>O</button>
+            </ButtonRow>
+          </Inner>
+        </Screen>
+      );
+    case GAME_STATES.inProgress:
+      return (
+        <Container dims={constants.DIMS}>
+          {grid.map((value, index) => {
+            return (
+              <Square key={index} onClick={() => humanMove(index)}>
+                {value !== null && (
+                  <Marker>{value === constants.PLAYER_X ? 'X' : 'O'}</Marker>
+                )}
+              </Square>
+            );
+          })}
+        </Container>
+      );
+    case GAME_STATES.over:
+      return (
+        <div>
+          <p>{winner}</p>
+          <button onClick={startNewGame}>Start over</button>
+        </div>
+      );
+  }
 };
 
 export default Board;

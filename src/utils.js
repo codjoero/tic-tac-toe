@@ -3,7 +3,12 @@ export const constants = {
   DRAW: 0,
   PLAYER_X: 1,
   PLAYER_O: 2,
-  SQUARE_DIMS: 100
+  SQUARE_DIMS: 100,
+  SCORES: {
+    1: 1,
+    0: 0,
+    2: -1
+  }
 };
 
 export const GAME_STATES = {

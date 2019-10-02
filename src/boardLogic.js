@@ -43,6 +43,12 @@ export default class BoardLogic {
     return resp;
   };
 
+  makeMove = (square, player) => {
+    if (this.grid[square] === null) {
+      this.grid[square] = player;
+    }
+  };
+
   clone = () => {
     return new BoardLogic(this.grid.concat());
   };

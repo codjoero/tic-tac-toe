@@ -1,5 +1,13 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { constants } from '../utils';
+
+const border = css`
+  border-bottom-left-radius: 15px 255px;
+  border-bottom-right-radius: 225px 15px;
+  border-top-left-radius: 255px 15px;
+  border-top-right-radius: 15px 225px;
+  border: 2px solid #41403e;
+`;
 
 export const Container = styled.div`
   display: flex;
@@ -15,7 +23,7 @@ export const Square = styled.div`
   align-items: center;
   width: ${constants.SQUARE_DIMS}px;
   height: ${constants.SQUARE_DIMS}px;
-  border: 1px solid black;
+  ${border}
 
   &:hover {
     cursor: pointer;

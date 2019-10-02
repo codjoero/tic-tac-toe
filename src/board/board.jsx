@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { constants, getRandomInt, GAME_STATES, switchPlayer } from '../utils';
 import BoardLogic from '../boardLogic';
+import minimax from '../minmax';
 
 import {
   Container,
@@ -47,10 +48,10 @@ const Board = () => {
   );
 
   const droidMove = useCallback(() => {
-    let index = getRandomInt(0, 8);
-    while (grid[index]) {
-      index = getRandomInt(0, 8);
-    }
+    const board = new BoardLogic(grid.slice());
+    const index = board.isBoardEmpty(grid)
+      ? getRandomInt(0, 8)
+      : minimax(board, droid)[1];
     move(index, droid);
     setNextMove(human);
   }, [move, grid, players]);
@@ -71,7 +72,7 @@ const Board = () => {
     ) {
       timeout = setTimeout(() => {
         droidMove();
-      }, 500);
+      }, 200);
     }
     return () => timeout && clearTimeout(timeout);
   }, [nextMove, droidMove, droid, gameState]);
@@ -103,12 +104,6 @@ const Board = () => {
   const startNewGame = () => {
     setGameState(GAME_STATES.notStarted);
     setGrid(arr);
-  };
-
-  const choosePlayer = option => {
-    setPlayers({ human: option, computer: switchPlayer(option) });
-    setGameState(GAME_STATES.inProgress);
-    setNextMove(constants.PLAYER_X);
   };
 
   switch (gameState) {
